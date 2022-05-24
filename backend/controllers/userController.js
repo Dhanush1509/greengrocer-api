@@ -65,53 +65,7 @@ const resendLink = asyncHandler(async (req, res) => {
   // send verification link
   else {
     // generate token and save
-    const token = new Token({
-      _userId: user._id,
-      token: crypto.randomBytes(16).toString("hex"),
-    });
-    const tokenSave = token.save();
-    if (!tokenSave) {
-      res.status(500);
-      throw new Error("Error encountered!!");
-    }
-
-    // Send email (use credintials of SendGrid)
-
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    const msg = {
-      from: process.env.EMAIL,
-      to: user.email,
-      subject: "Account Verification Link",
-      text:
-        "Hello " +
-        user.name +
-        ",\n\n" +
-        "Please verify your account by clicking the link: \n" +
-        process.env.URL +
-        "confirmation/" +
-        user.email +
-        "/" +
-        token.token +
-        "\n\nThank You!\n",
-    };
-    sgMail.send(msg).then(
-      () => {
-        res.status(200).json({
-          message: `A verification email has been sent to ${user.email}. It will be expire after one day. If you did not get verification Email click on resend token.`,
-        });
-      },
-      (error) => {
-        console.error(error);
-
-        if (error.response) {
-          console.error(error.response.body);
-        }
-        return res.status(500).json({
-          message:
-            "Technical Issue!, Please click on resend for verify your Email.",
-        });
-      }
-    );
+    
   }
 });
 
