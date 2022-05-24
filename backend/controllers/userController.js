@@ -195,14 +195,16 @@ const registerUser = asyncHandler(async (req, res) => {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY
     );
     const msg = {
-      from: "s.munidhanush15@gmail.com",
+      from: process.env.EMAIL,
       to: userSave.email,
       subject: "Account Verification Link",
       text:
         "Hello " +
         userSave.name +
         ",\n\n" +
-        "Please verify your account by clicking the link: \n"+process.env.URL+"confirmation/" +
+        "Please verify your account by clicking the link: \n" +
+        process.env.URL +
+        "confirmation/" +
         userSave.email +
         "/" +
         token.token +
