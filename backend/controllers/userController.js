@@ -82,7 +82,7 @@ process.env.SENDGRID_API_KEY
       
     );
     const msg = {
-      from: "s.munidhanush15@gmail.com",
+      from: process.env.EMAIL,
       to: user.email,
       subject: "Account Verification Link",
       text:
