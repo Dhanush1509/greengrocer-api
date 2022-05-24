@@ -4,6 +4,7 @@ import {nanoid} from "nanoid";
 import dotenv from "dotenv";
 dotenv.config();
 const razorPayInstance = asyncHandler(async (req, res) => {
+  console.log(process.env)
   const instance = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET,

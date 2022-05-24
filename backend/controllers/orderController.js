@@ -3,6 +3,8 @@ import Order from "../models/Order.js";
 import User from "../models/User.js";
 import crypto from "crypto";
 import sgMail from "@sendgrid/mail";
+import dotenv from "dotenv";
+dotenv.config();
 const addOrder = asyncHandler(async (req, res) => {
   const {
     orderItems,
@@ -46,7 +48,7 @@ const orderSuccess = asyncHandler(async (req, res) => {
     orderIdOfCurrent,
   } = req.body;
 
-  const shasum = crypto.createHmac("sha256", "BH4GWVT3zCb4naX0YPKMKUE4");
+  const shasum = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
   shasum.update(`${orderCreationId}|${razorpayPaymentId}`);
   const digest = shasum.digest("hex");
 
@@ -68,9 +70,7 @@ const orderSuccess = asyncHandler(async (req, res) => {
 
     const updatedOrder = await order.save();
     if (updatedOrder) {
-      sgMail.setApiKey(
-        process.env.SENDGRID_API_KEY
-      );
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       const msg = {
         to: order.user.email,
         from: "s.munidhanush15@gmail.com", // Use the email address or domain you verified above
@@ -198,32 +198,35 @@ const getMyOrders = asyncHandler(async (req, res) => {
 // THE PAYMENT IS LEGIT & VERIFIED
 // YOU CAN SAVE THE DETAILS IN YOUR DATABASE IF YOU WANT
 
-
-const getAllOrders=asyncHandler(async(req,res)=>{
+const getAllOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({})
     .sort([["isDelivered", 1]])
     .sort([["isPaid", -1]]);
-  if(orders){
-res.status(200).json({orders})
-
-  }
-  else{
+  if (orders) {
+    res.status(200).json({ orders });
+  } else {
     throw new Error("Orders not found");
   }
-})
-const updateOrderById=asyncHandler(async(req,res)=>{
-  const id=req.params.id;
-   const order = await Order.findById(id);
-   
-   if(order){
-   order.isDelivered = true;
-   order.deliveredAt=Date.now();
-  const updatedOrder=await order.save();
-   res.status(200).json(updatedOrder)
-   }
-   else{
-throw new Error("Some error occurred")
-   }
-})
+});
+const updateOrderById = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  const order = await Order.findById(id);
 
-export { addOrder, getOrderById, orderSuccess, getMyOrders,getAllOrders,updateOrderById};
+  if (order) {
+    order.isDelivered = true;
+    order.deliveredAt = Date.now();
+    const updatedOrder = await order.save();
+    res.status(200).json(updatedOrder);
+  } else {
+    throw new Error("Some error occurred");
+  }
+});
+
+export {
+  addOrder,
+  getOrderById,
+  orderSuccess,
+  getMyOrders,
+  getAllOrders,
+  updateOrderById,
+};
