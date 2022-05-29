@@ -1,6 +1,5 @@
-
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+const mongoose= require("mongoose");
+const bcrypt= require("bcryptjs");
 const tokenSchema = mongoose.Schema({
   _userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -11,5 +10,5 @@ const tokenSchema = mongoose.Schema({
   expireAt: { type: Date, default: Date.now, index: { expires: 86400000 } },
 });
 
-const Token = mongoose.model("Token",tokenSchema);
-export default Token;
+const Token = mongoose.model("Token", tokenSchema);
+module.exports= Token;

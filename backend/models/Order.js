@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose= require("mongoose");
 
 const orderSchema = mongoose.Schema(
   {
@@ -72,12 +72,12 @@ const orderSchema = mongoose.Schema(
       type: Date,
     },
     options: {
-      amount: { type: Number,default:0 },
-      currency: {type: String,default:'INR'},
-      receipt: { type: String,default:'receipt_order_74394'}
+      amount: { type: Number, default: 0 },
+      currency: { type: String, default: "INR" },
+      receipt: { type: String, default: "receipt_order_74394" },
     },
   },
   { timestamps: true }
 );
 const Order = mongoose.model("Order", orderSchema);
-export default Order;
+module.exports= Order;

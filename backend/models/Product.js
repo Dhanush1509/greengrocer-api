@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose= require("mongoose");
 const productSchema = mongoose.Schema(
   {
     user: {
@@ -11,8 +11,8 @@ const productSchema = mongoose.Schema(
       required: true,
     },
     image: {
-      type:String, // data: Buffer, contentType: String,
-      required:true
+      type: String, // data: Buffer, contentType: String,
+      required: true,
     },
     category: {
       type: String,
@@ -42,13 +42,15 @@ const productSchema = mongoose.Schema(
       default: 0,
     },
     specialPrice: {
-      type:Boolean,default:false,required:true
-    }
+      type: Boolean,
+      default: false,
+      required: true,
+    },
     // wishList:[{
     //     favouriteItem:{type:Boolean,default:false,required:true}
     // }]
   },
-  { timestamps:true }
+  { timestamps: true }
 );
 const Product = mongoose.model("Product", productSchema);
-export default  Product;
+module.exports= Product;

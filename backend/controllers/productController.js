@@ -1,7 +1,8 @@
-import asyncHandler from "express-async-handler";
-import Product from "../models/Product.js";
-
-const getProducts = asyncHandler(async (req, res) => {
+const asyncHandler=require("express-async-handler")
+const Product=require("../models/Product.js")
+const WishList=require("../models/WishList.js")
+const User=require("../models/User.js")
+exports.getProducts = asyncHandler(async (req, res) => {
   const pageSize = 9;
   const page = Number(req.query.productpage) || 1;
 
@@ -26,7 +27,7 @@ const getProducts = asyncHandler(async (req, res) => {
     throw new Error("Products not found");
   }
 });
-const getProductsForAdmin = asyncHandler(async (req, res) => {
+exports.getProductsForAdmin = asyncHandler(async (req, res) => {
   const products = await Product.find({});
 
   // console.log(products)
@@ -35,7 +36,7 @@ const getProductsForAdmin = asyncHandler(async (req, res) => {
     throw new Error("Products not found");
   }
 });
-const getProduct = asyncHandler(async (req, res) => {
+exports.getProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
     res.json(product);
@@ -43,9 +44,7 @@ const getProduct = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 });
-const addProduct = asyncHandler(async (req, res) => {
-  
-  
+exports.addProduct = asyncHandler(async (req, res) => {
   const {
     name,
     description,
@@ -56,26 +55,27 @@ const addProduct = asyncHandler(async (req, res) => {
     itemsSold,
     countInStock,
   } = req.body;
-  const product =new Product({
-    user:req.user._id,
-  name,
-  image,
-  category, 
-  description,
-  keywords: `${keywords},${description},${category},${name}`,
-  price:Number(price),
-  itemsSold:Number(itemsSold),
-  countInStock:Number(countInStock), 
-  })
-    const saveProduct = await product.save();
-    if (saveProduct) {
-      res.status(200).json({ message: "Product saved successfully" });
-    } else {
-      res.status(400)
-      throw new Error("Product not saved successfully")
-    }
+  const product = new Product({
+    user: req.user._id,
+    name,
+    image,
+    category,
+    description,
+    keywords: `${keywords},${description},${category},${name}`,
+    price: Number(price),
+    itemsSold: Number(itemsSold),
+    countInStock: Number(countInStock),
+  });
+  const saveProduct = await product.save();
+  if (saveProduct) {
+    res.status(200).json({ message: "Product saved successfully" });
+  } else {
+    res.status(400);
+    throw new Error("Product not saved successfully");
+  }
 });
-const updateProduct = asyncHandler(async (req, res) => {
+
+exports.updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   const {
     name,
@@ -99,7 +99,7 @@ const updateProduct = asyncHandler(async (req, res) => {
 
     const saveProduct = await product.save();
     if (saveProduct) {
-      res.status(200).json({ message: "Product saved successfully"});
+      res.status(200).json({ message: "Product saved successfully" });
     } else {
       res.status(400).json({ message: "Product not saved successfully" });
     }
@@ -107,7 +107,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 });
-const deleteProduct = asyncHandler(async (req, res) => {
+exports.deleteProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
     await product.remove();
@@ -116,11 +116,37 @@ const deleteProduct = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 });
-export {
-  getProducts,
-  getProduct,
-  updateProduct,
-  deleteProduct,
-  getProductsForAdmin,
-  addProduct
-};
+exports.addWishList = asyncHandler(async (req, res) => {
+  const [wish] = await WishList.find({ user: req.user._id });
+  const item = req.params.id;
+
+  if (wish) {
+    const itemFound = wish.wishList.findIndex((c) => c == item);
+    if (itemFound == -1) {
+      wish.wishList.push(item);
+    } else {
+      wish.wishList.splice(itemFound, 1);
+    }
+    await wish.save();
+  } else {
+    const saveItem = new WishList({
+      user: req.user._id,
+      wishList: [],
+    });
+    saveItem.wishList.push(item);
+    await saveItem.save();
+  }
+  const [items] = await WishList.find({ user: req.user._id }).populate(
+    "wishList",
+    "name price image"
+  );
+  res.json(items);
+});
+exports.getWishList = asyncHandler(async (req, res) => {
+  const [items] = await WishList.find({ user: req.user._id }).populate(
+    "wishList",
+    "name price image"
+  );
+  res.json(items);
+});
+

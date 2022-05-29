@@ -1,11 +1,13 @@
-import asyncHandler from "express-async-handler";
-import Order from "../models/Order.js";
-import User from "../models/User.js";
-import crypto from "crypto";
-import sgMail from "@sendgrid/mail";
-import dotenv from "dotenv";
+const asyncHandler=require("express-async-handler")
+const Order=require("../models/Order.js")
+const User=require("../models/User.js")
+const crypto=require("crypto")
+const sgMail=require("@sendgrid/mail")
+const dotenv=require("dotenv")
+const Chat = require("../models/Chat.js")
+const Message = require("../models/Message")
 dotenv.config();
-const addOrder = asyncHandler(async (req, res) => {
+exports.addOrder = asyncHandler(async (req, res) => {
   const {
     orderItems,
     delivery_Address,
@@ -31,14 +33,14 @@ const addOrder = asyncHandler(async (req, res) => {
   // if(currentOrderItem)
   res.json(currentOrderItem);
 });
-const getOrderById = asyncHandler(async (req, res) => {
+exports.getOrderById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const order = await Order.findById(id)
     .populate("user", "name email")
     .populate("orderedItemsData.id", "name price image");
   res.json(order);
 });
-const orderSuccess = asyncHandler(async (req, res) => {
+exports.orderSuccess = asyncHandler(async (req, res) => {
   // getting the details back from our font-end
   const {
     orderCreationId,
@@ -55,6 +57,7 @@ const orderSuccess = asyncHandler(async (req, res) => {
   if (digest !== razorpaySignature) {
     return res.status(400).json({ msg: "Transaction not legit!" });
   }
+
   const order = await Order.findById(orderIdOfCurrent)
     .populate("user", "name email")
     .populate("orderedItemsData.id", "name price");
@@ -68,12 +71,14 @@ const orderSuccess = asyncHandler(async (req, res) => {
       razorpaySignature,
     };
 
+   
+ 
     const updatedOrder = await order.save();
     if (updatedOrder) {
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       const msg = {
         to: order.user.email,
-        from: "s.munidhanush15@gmail.com", // Use the email address or domain you verified above
+        from: process.env.EMAIL, // Use the email address or domain you verified above
         subject: "I ❤ Greengrocer",
         html: `<h4>Hello ${order.user.name}, welcome to Greengrocer</h4>
     <h5>Your payment is successful for your recent order,  order id:  <a href="/order/${
@@ -179,12 +184,33 @@ const orderSuccess = asyncHandler(async (req, res) => {
         }
       );
     }
+     const chat = await Chat.findOne({ primaryUser: req.user._id });
+     if (chat) {
+   
+       const admin = await User.findOne({ isAdmin: true });
+       const chatId = chat._id;
+       console.log(req.user._id, admin._id);
+       if (req.user._id != admin._id) {
+         var newMessage = {
+           sender: admin._id,
+           content: `Payment Successful for your latest Order`,
+           chat: chatId,
+         };
+         var message = await Message.create(newMessage);
+     
+       }
+     }
     res.json(updatedOrder);
   } else {
     throw new Error("Payment request failed");
   }
 });
-const getMyOrders = asyncHandler(async (req, res) => {
+
+
+
+exports.getMyOrders = asyncHandler(async (req, res) => {
+     
+   
   const myorders = await Order.find({ user: req.user._id }).select(
     "-paymentResult.razorpaySignature -paymentResult.razorpayOrderId -order.deliveryAddress -deliveryPrice -itemsPrice -options -orderedItemsData -paymentOption -user -UpdatedAt -taxPrice"
   );
@@ -198,7 +224,7 @@ const getMyOrders = asyncHandler(async (req, res) => {
 // THE PAYMENT IS LEGIT & VERIFIED
 // YOU CAN SAVE THE DETAILS IN YOUR DATABASE IF YOU WANT
 
-const getAllOrders = asyncHandler(async (req, res) => {
+exports.getAllOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({})
     .sort([["isDelivered", 1]])
     .sort([["isPaid", -1]]);
@@ -208,7 +234,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
     throw new Error("Orders not found");
   }
 });
-const updateOrderById = asyncHandler(async (req, res) => {
+exports.updateOrderById = asyncHandler(async (req, res) => {
   const id = req.params.id;
   const order = await Order.findById(id);
 
@@ -222,11 +248,4 @@ const updateOrderById = asyncHandler(async (req, res) => {
   }
 });
 
-export {
-  addOrder,
-  getOrderById,
-  orderSuccess,
-  getMyOrders,
-  getAllOrders,
-  updateOrderById,
-};
+

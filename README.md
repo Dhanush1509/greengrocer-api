@@ -14,8 +14,7 @@
 
 👤 **Singamsetty Munidhanush**
 
-* Github: [@Dhanush1509](https://github.com/Dhanush1509)
-
+- Github: [@Dhanush1509](https://github.com/Dhanush1509)
 
 # Getting Started with Create React App
 
@@ -89,6 +88,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
 ### REFERENCES
+
 <a href="https://slgupta022.medium.com/email-verification-using-sendgrid-in-node-js-express-js-mongodb-c5803f643e09">Email verification</a><br/>
 <a href="https://dev.to/soumyadey/integrate-razorpay-in-your-react-app-2nib">Working with Razorpay</a>
 

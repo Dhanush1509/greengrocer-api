@@ -1,6 +1,6 @@
-import express from "express";
+const express = require("express");
 const router = express.Router();
-import {
+const {
   loginUser,
   getUserProfile,
   registerUser,
@@ -9,9 +9,9 @@ import {
   updateUser,
   deleteUser,
   getUserById,
-  confirmEmail
-} from "../controllers/userController.js";
-import { protect, checkAdmin } from "../middlewares/setAuthToken.js";
+  confirmEmail,
+} = require("../controllers/userController.js");
+const { protect, checkAdmin } = require("../middlewares/setAuthToken.js");
 router.post("/login", loginUser);
 router.post("/register", registerUser);
 router.get("/confirmation/:email/:token", confirmEmail);
@@ -25,5 +25,4 @@ router
   .put(protect, checkAdmin, updateUser)
   .delete(protect, checkAdmin, deleteUser);
 router.route("/").get(protect, checkAdmin, getUsers);
-
-export default router;
+module.exports = router;

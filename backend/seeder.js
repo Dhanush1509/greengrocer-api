@@ -1,19 +1,18 @@
-import mongoose from 'mongoose';
-import colors from 'colors';
-import User from './models/User.js';
-import Product from "./models/Product.js";
-import Order from "./models/Order.js";
-import users from './data/users.js';
-import products from "./data/products.js";
-import connectDB from './config/db.js'
-import dotenv from "dotenv";
-
+const mongoose =require("mongoose");
+const colors=require('colors')
+const User= require("./models/User.js");
+const Product= require("./models/Product.js");
+const Order= require("./models/Order.js");
+const users= require("./data/users.js");
+const products =require("./data/products.js");
+const connectDB= require("./config/db.js");
+const dotenv=require("dotenv")
 
 dotenv.config();
 
 connectDB();
 
-const importData = async () => {
+const constData = async () => {
   try {
     await Order.deleteMany();
     await Product.deleteMany();
@@ -29,7 +28,7 @@ const importData = async () => {
 
     await Product.insertMany(sampleProducts);
 
-    console.log("Data Imported!".green.inverse);
+    console.log("Data consted!".green.inverse);
     process.exit();
   } catch (error) {
     console.error(`${error}`.red.inverse);
@@ -54,5 +53,5 @@ const destroyData = async () => {
 if (process.argv[2] === "-d") {
   destroyData();
 } else {
-  importData();
+  constData();
 }
