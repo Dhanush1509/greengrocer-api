@@ -1,11 +1,11 @@
-const asyncHandler=require("express-async-handler")
-const Order=require("../models/Order.js")
-const User=require("../models/User.js")
-const crypto=require("crypto")
-const sgMail=require("@sendgrid/mail")
-const dotenv=require("dotenv")
-const Chat = require("../models/Chat.js")
-const Message = require("../models/Message")
+const asyncHandler = require("express-async-handler");
+const Order = require("../models/Order.js");
+const User = require("../models/User.js");
+const crypto = require("crypto");
+const sgMail = require("@sendgrid/mail");
+const dotenv = require("dotenv");
+const Chat = require("../models/Chat.js");
+const Message = require("../models/Message");
 dotenv.config();
 exports.addOrder = asyncHandler(async (req, res) => {
   const {
@@ -29,6 +29,25 @@ exports.addOrder = asyncHandler(async (req, res) => {
     totalPrice: total_Price,
   });
   const currentOrderItem = await order.save();
+   const currOrder= await Order.findById(currentOrderItem._id)
+     .populate("orderedItemsData.id", "name price");
+  const content = `You placed a new order.click the below link to know more about your order # order/${currentOrderItem._id}# You ordered the following products from Greengrocer. ${currOrder.orderedItemsData.map( (c,index) => ` ->[${index+1}@${c.id._id}@${c.id.name}@₹${c.id.price}/kg@${c.quantity}kg]#`)}.Do the required Payment at #order/${currentOrderItem._id}#`;
+  console.log(content)
+  const chat = await Chat.findOne({ primaryUser: req.user._id });
+  if (chat) {
+    const admin = await User.findOne({ isAdmin: true });
+    const chatId = chat._id;
+    console.log(req.user._id, admin._id);
+    if (req.user._id != admin._id) {
+      var newMessage = {
+        sender: admin._id,
+        content,
+        chat: chatId,
+      };
+      var message = await Message.create(newMessage);
+    }
+  }
+
   // const orderDbId = currentOrderItem._id;
   // if(currentOrderItem)
   res.json(currentOrderItem);
@@ -71,8 +90,6 @@ exports.orderSuccess = asyncHandler(async (req, res) => {
       razorpaySignature,
     };
 
-   
- 
     const updatedOrder = await order.save();
     if (updatedOrder) {
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -184,33 +201,27 @@ exports.orderSuccess = asyncHandler(async (req, res) => {
         }
       );
     }
-     const chat = await Chat.findOne({ primaryUser: req.user._id });
-     if (chat) {
-   
-       const admin = await User.findOne({ isAdmin: true });
-       const chatId = chat._id;
-       console.log(req.user._id, admin._id);
-       if (req.user._id != admin._id) {
-         var newMessage = {
-           sender: admin._id,
-           content: `Payment Successful for your latest Order`,
-           chat: chatId,
-         };
-         var message = await Message.create(newMessage);
-     
-       }
-     }
+    const chat = await Chat.findOne({ primaryUser: req.user._id });
+    if (chat) {
+      const admin = await User.findOne({ isAdmin: true });
+      const chatId = chat._id;
+      console.log(req.user._id, admin._id);
+      if (req.user._id != admin._id) {
+        var newMessage = {
+          sender: admin._id,
+          content: `Payment Successful for your latest Order`,
+          chat: chatId,
+        };
+        var message = await Message.create(newMessage);
+      }
+    }
     res.json(updatedOrder);
   } else {
     throw new Error("Payment request failed");
   }
 });
 
-
-
 exports.getMyOrders = asyncHandler(async (req, res) => {
-     
-   
   const myorders = await Order.find({ user: req.user._id }).select(
     "-paymentResult.razorpaySignature -paymentResult.razorpayOrderId -order.deliveryAddress -deliveryPrice -itemsPrice -options -orderedItemsData -paymentOption -user -UpdatedAt -taxPrice"
   );
@@ -247,5 +258,3 @@ exports.updateOrderById = asyncHandler(async (req, res) => {
     throw new Error("Some error occurred");
   }
 });
-
-

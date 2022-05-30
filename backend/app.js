@@ -73,7 +73,11 @@ io.on("connection", (socket) => {
     console.log("typing", room);
   });
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
-
+  socket.on("notification", (userId, notification) => {
+    console.log(userId, notification,process.env.ADMIN_ID);
+    socket.in(userId).emit("notification", notification);
+     socket.in(process.env.ADMIN_ID).emit("notification", notification);
+  });
   socket.on("new message", (newMessageRecieved) => {
     console.log(newMessageRecieved);
     var chat = newMessageRecieved.chat;
