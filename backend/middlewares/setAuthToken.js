@@ -1,9 +1,10 @@
-const jwt =require("jsonwebtoken");
-const User=require("../models/User.js")
-const dotenv=require("dotenv")
+const jwt = require("jsonwebtoken");
+const User = require("../models/User.js");
+const asyncHandler = require("express-async-handler");
+const dotenv = require("dotenv");
 dotenv.config();
 
-exports.protect = async (req, res, next) => {
+exports.protect = asyncHandler(async (req, res, next) => {
   const token = req.header("x-auth-token");
 
   if (!token) {
@@ -19,13 +20,12 @@ exports.protect = async (req, res, next) => {
     res.status(401);
     throw new Error("Authorisation denied");
   }
-};
+});
 
-exports.checkAdmin = (req, res, next) => {
+exports.checkAdmin = asyncHandler(async(req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {
     throw new Error("Danger!!, You are trying to access an unauthorised page");
   }
-};
-
+});
