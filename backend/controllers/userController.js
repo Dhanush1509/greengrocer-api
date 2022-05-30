@@ -36,12 +36,12 @@ exports.registerUser = asyncHandler(async (req, res) => {
          isActive:false,
          primaryUser:newUser._id
        });
-      //  sendMail(
-      //    user._id,
-      //    user.name,
-      //    user.email,
-      //    `A verification email has been sent to ${email}. It will be expire after one day. If you did not get verification Email click on resend token.`
-      //  );
+       sendMail(
+         user._id,
+         user.name,
+         user.email,
+         `A verification email has been sent to ${email}. It will be expire after one day. If you did not get verification Email click on resend token.`
+       );
     }
    
   }
