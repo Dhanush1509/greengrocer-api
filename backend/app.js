@@ -51,10 +51,7 @@ const server = app.listen(
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "http://greengrocer.vercel.app",
-    ],
+    origin: "*",
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
     credentials: true,
@@ -84,8 +81,7 @@ io.on("connection", (socket) => {
     if (!chat.users) return console.log("chat.users not defined");
 
     chat.users.forEach((user) => {
-    
-    // socket.in(chat.groupAdmin).emit("message recieved", newMessageRecieved);
+      // socket.in(chat.groupAdmin).emit("message recieved", newMessageRecieved);
       if (user._id == newMessageRecieved.sender._id) return;
       socket.in(user._id).emit("message recieved", newMessageRecieved);
     });
