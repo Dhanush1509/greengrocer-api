@@ -1,4 +1,4 @@
-import dotenv from "dotenv"
+const dotenv = require("dotenv")
 dotenv.config()
 const sendMail = (id, name, email, message) => {
   const token = new Token({
