@@ -6,8 +6,7 @@ const crypto = require("crypto");
 const sgMail = require("@sendgrid/mail");
 const dotenv = require("dotenv");
 const Order = require("../models/Order.js");
-const sendMail = require("../utils/sendMail");
-const Chat=require("../models/Chat")
+const Chat = require("../models/Chat");
 dotenv.config();
 
 exports.registerUser = asyncHandler(async (req, res) => {
@@ -21,29 +20,70 @@ exports.registerUser = asyncHandler(async (req, res) => {
     }
   } else {
     const userSave = new User({ name, email, password });
-    const newUser=await userSave.save();
-    if(newUser){
-      const users=[]
-       const admin = await User.findOne({ isAdmin: true });
-       console.log(admin);
-       users.push(admin._id);
-       users.push(newUser._id);
-       const groupChat = await Chat.create({
-         chatName:newUser.name,
-         users,
-         isGroupChat: true,
-         groupAdmin: admin._id,
-         isActive:false,
-         primaryUser:newUser._id
-       });
-       sendMail(
-         user._id,
-         user.name,
-         user.email,
-         `A verification email has been sent to ${email}. It will be expire after one day. If you did not get verification Email click on resend token.`
-       );
+    const newUser = await userSave.save();
+    if (newUser) {
+      const users = [];
+      const admin = await User.findOne({ isAdmin: true });
+      console.log(admin);
+      users.push(admin._id);
+      users.push(newUser._id);
+      const groupChat = await Chat.create({
+        chatName: newUser.name,
+        users,
+        isGroupChat: true,
+        groupAdmin: admin._id,
+        isActive: false,
+        primaryUser: newUser._id,
+      });
+      const message = `A verification email has been sent to ${newUser.email}. It will be expire after one day. If you did not get verification Email click on resend token.`;
+
+      const token = new Token({
+        _userId: newUser._id,
+        token: crypto.randomBytes(16).toString("hex"),
+      });
+      const tokenSave = token.save();
+      if (!tokenSave) {
+        res.status(500);
+        throw new Error("Error encountered!!");
+      }
+
+      // Send email (use credintials of SendGrid)
+
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      const msg = {
+        from: process.env.EMAIL,
+        to: newUser.email,
+        subject: "Account Verification Link",
+        text:
+          "Hello " +
+          newUser.name +
+          ",\n\n" +
+          "Please verify your account by clicking the link: \n" +
+          process.env.URL +
+          "confirmation/" +
+          newUser.email +
+          "/" +
+          token.token +
+          "\n\nThank You!\n",
+      };
+      sgMail.send(msg).then(
+        () => {
+          res.status(200).json({
+            message,
+          });
+        },
+        (error) => {
+          console.error(error);
+          if (error.response) {
+            console.error(error.response.body);
+          }
+          return res.status(500).json({
+            message:
+              "Technical Issue!, Please click on resend for verify your Email.",
+          });
+        }
+      );
     }
-   
   }
 });
 exports.loginUser = asyncHandler(async (req, res) => {
@@ -63,7 +103,6 @@ exports.loginUser = asyncHandler(async (req, res) => {
     res.status(401);
     throw new Error("Your email is not verified, Please verify");
   } else {
-   
     res.json({
       _id: user._id,
       name: user.name,
