@@ -1,3 +1,5 @@
+import dotenv from "dotenv"
+dotenv.config()
 const sendMail = (id, name, email, message) => {
   const token = new Token({
     _userId: id,
@@ -13,7 +15,7 @@ const sendMail = (id, name, email, message) => {
 
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msg = {
-    from: "s.munidhanush15@gmail.com",
+    from: process.env.EMAIL,
     to: email,
     subject: "Account Verification Link",
     text:
