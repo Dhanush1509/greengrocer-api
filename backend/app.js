@@ -16,7 +16,7 @@ DB_CONNECT();
 app.use(express.json());
 app.use(cors());
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", process.env.URL);
+  res.setHeader("Access-Control-Allow-Origin", "https://greengrocer.vercel.app");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, x-auth-token"
